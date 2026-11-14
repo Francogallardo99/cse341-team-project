@@ -5,75 +5,61 @@
     Search by Region:
     <select id="region-filter">
         <option value="all">All Regions</option>
-        <% regions.forEach((region) => { %>
-            <option value="<%= region %>" <%= query.region === region ? 'selected' : '' %>><%= region.charAt(0).toUpperCase() + region.slice(1) %></option>
-        <% }); %>
     </select>
 
     Search by Season:
     <select id="season-filter">
         <option value="all">Any Season</option>
-        <% seasons.forEach((season) => { %>
-            <option value="<%= season %>" <%= query.season === season ? 'selected' : '' %>><%= season.charAt(0).toUpperCase() + season.slice(1) %></option>
-        <% }); %>
     </select>
 </div>
 
-<div class="routes-grid">
-    <% trips.forEach(trip => { %>
-        <div class="route-card <%= trip.region %>">
-            <div class="route-header">
-                <h2 class="route-name"><%= trip.name %></h2>
-                <span class="route-region"><%= trip.region %></span>
-            </div>
+<div id="trips-container" class="routes-grid"></div>
 
-            <div class="station-info">
-                <div class="station">
-                    <div class="station-type">From:</div>
-                    <div class="station-name"><%= trip.startStation %></div>
-                </div>
-                <div class="route-arrow">&#8594;</div>
-                <div class="station">
-                    <div class="station-type">To:</div>
-                    <div class="station-name"><%= trip.endStation %></div>
-                </div>
-            </div>
+<template id="trip-card-template">
+    <div class="trip-card">
+        <img src="" alt="Trip Image" class="trip-image">
+        <h2 class="trip-name"></h2>
+        <p class="trip-region"></p>
+        <p class="trip-season"></p>
+        <p class="trip-description"></p>
+        <p class="trip-duration"></p>
+        <p class="trip-distance"></p>
+        <a href="" class="details-link">View Details</a>
+    </div>
+</template>
 
-            <div class="route-details">
-                <div class="detail-item">
-                    <span class="detail-icon">&#128337;</span>
-                    <span><span class="detail-label">Duration:</span> <%= trip.duration %></span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-icon">&#128205;</span>
-                    <span><span class="detail-label">Distance:</span> <%= trip.distance %>km</span>
-                </div>
-                <div class="detail-item">
-                    <span class="season-badge season-<%= trip.bestSeason %>">
-                        Best in <%= trip.bestSeason %>
-                    </span>
-                </div>
-            </div>
+<script>
+    async function loadTrips() {
+        try {
+            const response = await fetch('/api/trips');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const trips = await response.json();
+            const container = document.getElementById('trips-container');
+            const template = document.getElementById('trip-card-template');
+            container.innerHTML = '';
 
-            <div class="route-description">
-                <%= trip.description %>
-            </div>
+            trips.forEach(trip => {
+                const tripCard = template.content.cloneNode(true);
+                tripCard.querySelector('.trip-image').src = trip.imageUrl;
+                tripCard.querySelector('.trip-name').textContent = trip.name;
+                tripCard.querySelector('.trip-region').textContent = `Region: ${trip.region}`;
+                tripCard.querySelector('.trip-season').textContent = `Season: ${trip.bestSeason}`;
+                tripCard.querySelector('.trip-description').textContent = `Description: ${trip.description}`;
+                tripCard.querySelector('.trip-duration').textContent = `Duration: ${trip.duration}`;
+                tripCard.querySelector('.trip-distance').textContent = `Distance: ${trip.distance}`;
+                tripCard.querySelector('.details-link').href = `/trips/${trip.id}`;
+                container.appendChild(tripCard);
+            });
 
-            <div class="highlights">
-                <div class="highlights-list">
-                    <% trip.highlights.forEach(highlight => { %>
-                        <span class="highlight-tag"><%= highlight %></span>
-                    <% }); %>
-                </div>
-            </div>
-                
-            <div class="route-actions">
-                <a href="/trips/<%= trip.id %>" class="view-details-btn">
-                    View Details &amp; Book &#8594;
-                </a>
-            </div>
-        </div>
-    <% }); %>
-</div>
+            return trips;
+        } catch (error) {
+            console.error('Error fetching trips:', error);
+            return [];
+        }
+    }
+    loadTrips();
+</script>
 
 <%- include('../partials/footer') %>
