@@ -25,6 +25,7 @@ export async function getTripById(req, res) {
   }
 }
 
+
 export async function getAllTrips(req, res) {
   try {
     const trips = await findAllTrips();
