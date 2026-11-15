@@ -8,3 +8,6 @@ export async function getSchedulesByTripId(tripId, month) {
     return schedule.find(query).lean();
 }
 
+export async function getScheduleById(id) {
+    return schedule.findOne({ id: Number(id) }).lean();
+}
