@@ -1,102 +1,225 @@
 <%- include('../partials/header') %>
 
-<article class="route-detail">
-    <div class="route-header">
-        <div class="route-header-content">
-            <h1 class="route-name"><%= details.name %></h1>
-            <p class="route-description"><%= details.description %></p>
-            
-            <% if (details.highlights && details.highlights.length > 0) { %>
-            <div class="highlights">
-                <% details.highlights.forEach(function(highlight) { %>
-                <span class="highlight-tag"><%= highlight %></span>
-                <% }); %>
-            </div>
-            <% } %>
-        </div>
-        
-        <% if (details.imageUrl) { %>
-        <div class="route-image">
-            <img src="<%= details.imageUrl %>" alt="<%= details.name %>">
-        </div>
-        <% } %>
-    </div>
+    <p id="status-message">Loading trip...</p>
 
-    <div class="route-info">
-        <div class="info-grid">
-            <div class="info-item">
-                <span class="info-label">Region</span>
-                <span class="info-value region-<%= details.region %>"><%= details.region.charAt(0).toUpperCase() + details.region.slice(1) %></span>
+    <article class="route-detail" id="trip-detail" data-trip-id="<%= tripId %>" hidden>
+        <div class="route-header">
+            <div class="route-header-content">
+                <h1 class="route-name" id="trip-name"></h1>
+                <p class="route-description" id="trip-description"></p>
+                <div class="highlights" id="trip-highlights"></div>
             </div>
-            
-            <div class="info-item">
-                <span class="info-label">Duration</span>
-                <span class="info-value"><%= details.duration %></span>
-            </div>
-            
-            <div class="info-item">
-                <span class="info-label">Distance</span>
-                <span class="info-value"><%= details.distance %> km</span>
-            </div>
-            
-            <div class="info-item">
-                <span class="info-label">Best Season</span>
-                <span class="info-value season-<%= details.bestSeason %>"><%= details.bestSeason.charAt(0).toUpperCase() + details.bestSeason.slice(1) %></span>
+
+            <div class="route-image">
+                <img src="" alt="" id="trip-image">
             </div>
         </div>
 
-        <div class="route-stations">
-            <h2>Trip</h2>
-            <div class="stations">
-                <div class="station">
-                    <span class="station-label">Start</span>
-                    <span class="station-name"><%= details.startStation.charAt(0).toUpperCase() + details.startStation.slice(1) %></span>
+        <div class="route-info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Region</span>
+                    <span class="info-value" id="trip-region"></span>
                 </div>
-                <div class="station">
-                    <span class="station-label">End</span>
-                    <span class="station-name"><%= details.endStation.charAt(0).toUpperCase() + details.endStation.slice(1) %></span>
+                <div class="info-item">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value" id="trip-duration"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Distance</span>
+                    <span class="info-value" id="trip-distance"></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Best Season</span>
+                    <span class="info-value" id="trip-season"></span>
                 </div>
             </div>
-        </div>
 
-        <div class="route-operating">
-            <h2>Operating Schedule</h2>
-            <div class="months-grid">
-                <% details.operatingMonths.forEach(function(month) { %>
-                <span class="month-badge"><%= month %></span>
-                <% }); %>
-            </div>
-        </div>
-
-        <% if (details.schedules && details.schedules.length > 0) { %>
-        <div class="route-schedules">
-            <h2>Available Schedules</h2>
-            <div class="schedules-grid">
-                <% details.schedules.forEach(function(schedule) { %>
-                <div class="schedule-card">
-                    <div class="schedule-times">
-                        <div class="time-block">
-                            <span class="time-label">Departs</span>
-                            <span class="time-value"><%= schedule.departureTime %></span>
-                        </div>
-                        <span class="time-arrow">→</span>
-                        <div class="time-block">
-                            <span class="time-label">Arrives</span>
-                            <span class="time-value"><%= schedule.arrivalTime %></span>
-                        </div>
+            <div class="route-stations">
+                <h2>Trip</h2>
+                <div class="stations">
+                    <div class="station">
+                        <span class="station-label">Start</span>
+                        <span class="station-name" id="trip-start"></span>
                     </div>
-                    <div class="schedule-days">
-                        <% schedule.daysOfWeek.forEach(function(day) { %>
-                        <span class="day-badge"><%= day.substring(0, 3) %></span>
-                        <% }); %>
+                    <div class="station">
+                        <span class="station-label">End</span>
+                        <span class="station-name" id="trip-end"></span>
                     </div>
-                    <a href="/trips/booking/<%= schedule.id %>" class="book-btn">Book Now</a>
                 </div>
-                <% }); %>
+            </div>
+
+            <div class="route-operating">
+                <h2>Operating Schedule</h2>
+                <div class="months-grid" id="trip-months"></div>
+            </div>
+
+            <div class="route-schedules">
+                <h2>Available Schedules</h2>
+                <p id="schedules-status">Select a month to see schedules.</p>
+                <div class="schedules-grid" id="schedules-grid"></div>
             </div>
         </div>
-        <% } %>
-    </div>
-</article>
+    </article>
 
-<%- include('../partials/footer') %>
+    <template id="schedule-template">
+        <div class="schedule-card">
+            <div class="schedule-times">
+                <div class="time-block">
+                    <span class="time-label">Departs</span>
+                    <span class="time-value departure"></span>
+                </div>
+                <span class="time-arrow">→</span>
+                <div class="time-block">
+                    <span class="time-label">Arrives</span>
+                    <span class="time-value arrival"></span>
+                </div>
+            </div>
+            <div class="schedule-days"></div>
+            <a href="" class="book-btn">Book Now</a>
+        </div>
+    </template>
+
+    <script>
+        const article = document.getElementById('trip-detail');
+        const statusMessage = document.getElementById('status-message');
+        const schedulesStatus = document.getElementById('schedules-status');
+        const schedulesGrid = document.getElementById('schedules-grid');
+        const template = document.getElementById('schedule-template');
+        const tripId = article.dataset.tripId;
+
+        const months = ['january', 'february', 'march', 'april', 'may', 'june',
+            'july', 'august', 'september', 'october', 'november', 'december'];
+
+        function capitalize(text) {
+            return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+        }
+
+        function setText(id, value) {
+            document.getElementById(id).textContent = value || '';
+        }
+
+        function monthToNumber(name) {
+                if (typeof name === 'number' || !isNaN(name)) {
+                    return Number(name);
+                }
+                return months.findIndex((m) => m.startsWith(name.toLowerCase().slice(0, 3))) + 1;
+            }
+
+        function fillBadges(id, items, className) {
+            const container = document.getElementById(id);
+            container.innerHTML = '';
+            items.forEach((item) => {
+                const span = document.createElement('span');
+                span.className = className;
+                span.textContent = item;
+                container.appendChild(span);
+            });
+        }
+
+        function showSchedules(schedules) {
+            schedulesGrid.innerHTML = '';
+
+            if (schedules.length === 0) {
+                schedulesStatus.textContent = 'No schedules for this month.';
+                return;
+            }
+
+            schedulesStatus.textContent = '';
+
+            schedules.forEach((schedule) => {
+                const card = template.content.cloneNode(true);
+                card.querySelector('.departure').textContent = schedule.departureTime;
+                card.querySelector('.arrival').textContent = schedule.arrivalTime;
+                card.querySelector('.book-btn').href = `/trips/booking/${schedule.id}`;
+
+                const days = card.querySelector('.schedule-days');
+                (schedule.daysOfWeek || []).forEach((day) => {
+                    const badge = document.createElement('span');
+                    badge.className = 'day-badge';
+                    badge.textContent = day.substring(0, 3);
+                    days.appendChild(badge);
+                });
+
+                schedulesGrid.appendChild(card);
+            });
+        }
+
+        async function loadSchedules(month) {
+            schedulesGrid.innerHTML = '';
+            schedulesStatus.textContent = 'Loading schedules...';
+
+            try {
+                const response = await fetch(`/api/trips/${tripId}/schedules?month=${monthToNumber(month)}`);
+                if (!response.ok) throw new Error(response.status);
+                showSchedules(await response.json());
+            } catch (error) {
+                console.error(error);
+                schedulesStatus.textContent = 'Could not load schedules.';
+            }
+        }
+
+        function showMonths(list) {
+            const container = document.getElementById('trip-months');
+            container.innerHTML = '';
+
+            list.forEach((month) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'month-badge';
+                button.textContent = month;
+                button.addEventListener('click', () => {
+                    container.querySelectorAll('.month-badge').forEach((b) => b.classList.remove('active'));
+                    button.classList.add('active');
+                    loadSchedules(month);
+                });
+                container.appendChild(button);
+            });
+
+            const first = container.querySelector('.month-badge');
+            if (first) first.click();
+        }
+
+        function showTrip(trip) {
+            document.title = trip.name;
+
+            setText('trip-name', trip.name);
+            setText('trip-description', trip.description);
+            setText('trip-region', capitalize(trip.region));
+            setText('trip-duration', trip.duration);
+            setText('trip-distance', `${trip.distance} km`);
+            setText('trip-season', capitalize(trip.bestSeason) || '-');
+            setText('trip-start', capitalize(trip.startStation));
+            setText('trip-end', capitalize(trip.endStation));
+
+            fillBadges('trip-highlights', trip.highlights || [], 'highlight-tag');
+
+            const image = document.getElementById('trip-image');
+            image.src = trip.imageUrl || '';
+            image.alt = trip.name;
+
+            statusMessage.hidden = true;
+            article.hidden = false;
+
+            showMonths(trip.operatingMonths || []);
+        }
+
+        async function loadTrip() {
+            try {
+                const response = await fetch(`/api/trips/${tripId}`);
+                if (response.status === 404) {
+                    statusMessage.textContent = 'Trip not found.';
+                    return;
+                }
+                if (!response.ok) throw new Error(response.status);
+                showTrip(await response.json());
+            } catch (error) {
+                console.error(error);
+                statusMessage.textContent = 'Could not load the trip.';
+            }
+        }
+
+        loadTrip();
+    </script>
+
+    <%- include('../partials/footer') %>

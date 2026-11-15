@@ -54,7 +54,7 @@ export async function tripDetailsPage(req, res) {
             return res.status(404).render("404", { title: "Trip Not Found" });
         }
 
-        return res.render("trips/details", { title: trip.name, details: trip });
+      return res.render("trips/details", { title: trip.name, details: trip, tripId: tripId });
     } catch (error) {
         console.error("Error fetching trip details:", error);
         return res.status(500).render("500", { title: "Server Error" });

@@ -1,65 +1,112 @@
 <%- include('../partials/header') %>
-<h1><%- title %></h1>
+    <h1><%- title %></h1>
 
-<div id="filters">
-    Search by Region:
-    <select id="region-filter">
-        <option value="all">All Regions</option>
-    </select>
+    <div id="filters">
+        Search by Region:
+        <select id="region-filter">
+            <option value="all">All Regions</option>
+        </select>
 
-    Search by Season:
-    <select id="season-filter">
-        <option value="all">Any Season</option>
-    </select>
-</div>
-
-<div id="trips-container" class="routes-grid"></div>
-
-<template id="trip-card-template">
-    <div class="trip-card">
-        <img src="" alt="Trip Image" class="trip-image">
-        <h2 class="trip-name"></h2>
-        <p class="trip-region"></p>
-        <p class="trip-season"></p>
-        <p class="trip-description"></p>
-        <p class="trip-duration"></p>
-        <p class="trip-distance"></p>
-        <a href="" class="details-link">View Details</a>
+        Search by Season:
+        <select id="season-filter">
+            <option value="all">Any Season</option>
+        </select>
     </div>
-</template>
 
-<script>
-    async function loadTrips() {
-        try {
-            const response = await fetch('/api/trips');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const trips = await response.json();
-            const container = document.getElementById('trips-container');
-            const template = document.getElementById('trip-card-template');
+    <div id="trips-container" class="routes-grid"></div>
+
+    <template id="trip-card-template">
+        <div class="trip-card">
+            <img src="" alt="Trip Image" class="trip-image">
+            <h2 class="trip-name"></h2>
+            <p class="trip-region"></p>
+            <p class="trip-season"></p>
+            <p class="trip-description"></p>
+            <p class="trip-duration"></p>
+            <p class="trip-distance"></p>
+            <a href="" class="details-link">View Details</a>
+        </div>
+    </template>
+
+    <script>
+        const container = document.getElementById('trips-container');
+        const template = document.getElementById('trip-card-template');
+        const regionFilter = document.getElementById('region-filter');
+        const seasonFilter = document.getElementById('season-filter');
+
+        let allTrips = [];
+
+        function capitalize(text) {
+            return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+        }
+
+        function fillFilters() {
+            const regions = [...new Set(allTrips.map((trip) => trip.region))].filter(Boolean);
+            const seasons = [...new Set(allTrips.map((trip) => trip.bestSeason))].filter(Boolean);
+
+            regions.forEach((region) => {
+                regionFilter.append(new Option(capitalize(region), region));
+            });
+
+            seasons.forEach((season) => {
+                seasonFilter.append(new Option(capitalize(season), season));
+            });
+        }
+
+        function showTrips(trips) {
             container.innerHTML = '';
 
-            trips.forEach(trip => {
+            if (trips.length === 0) {
+                container.textContent = 'No trips found.';
+                return;
+            }
+
+            trips.forEach((trip) => {
                 const tripCard = template.content.cloneNode(true);
-                tripCard.querySelector('.trip-image').src = trip.imageUrl;
+                tripCard.querySelector('.trip-image').src = trip.imageUrl || '';
                 tripCard.querySelector('.trip-name').textContent = trip.name;
                 tripCard.querySelector('.trip-region').textContent = `Region: ${trip.region}`;
-                tripCard.querySelector('.trip-season').textContent = `Season: ${trip.bestSeason}`;
-                tripCard.querySelector('.trip-description').textContent = `Description: ${trip.description}`;
+                tripCard.querySelector('.trip-season').textContent = `Season: ${trip.bestSeason || '-'}`;
+                tripCard.querySelector('.trip-description').textContent = `Description: ${trip.description || ''}`;
                 tripCard.querySelector('.trip-duration').textContent = `Duration: ${trip.duration}`;
                 tripCard.querySelector('.trip-distance').textContent = `Distance: ${trip.distance}`;
                 tripCard.querySelector('.details-link').href = `/trips/${trip.id}`;
                 container.appendChild(tripCard);
             });
-
-            return trips;
-        } catch (error) {
-            console.error('Error fetching trips:', error);
-            return [];
         }
-    }
-    loadTrips();
-</script>
 
-<%- include('../partials/footer') %>
+        function applyFilters() {
+            const region = regionFilter.value;
+            const season = seasonFilter.value;
+
+            const filtered = allTrips.filter((trip) => {
+                const regionMatches = region === 'all' || trip.region === region;
+                const seasonMatches = season === 'all' || trip.bestSeason === season;
+                return regionMatches && seasonMatches;
+            });
+
+            showTrips(filtered);
+        }
+
+        async function loadTrips() {
+            try {
+                const response = await fetch('/api/trips');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                allTrips = await response.json();
+                fillFilters();
+                showTrips(allTrips);
+            } catch (error) {
+                console.error('Error fetching trips:', error);
+                container.textContent = 'Could not load trips.';
+            }
+        }
+
+        regionFilter.addEventListener('change', applyFilters);
+        seasonFilter.addEventListener('change', applyFilters);
+
+        loadTrips();
+    </script>
+
+    <%- include('../partials/footer') %>
