@@ -1,0 +1,87 @@
+<%- include('./partials/header') %>
+
+    <div id="booking-container">
+        <h1>Bookings</h1>
+        <p id="bookings-status">Loading bookings...</p>
+
+        <table id="bookings-table" hidden>
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>Trip</th>
+                    <th>Day</th>
+                    <th>Ticket</th>
+                    <th>Passengers</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody id="bookings-body"></tbody>
+        </table>
+    </div>
+
+    <template id="booking-row-template">
+        <tr>
+            <td class="booking-id"></td>
+            <td class="booking-trip"></td>
+            <td class="booking-day"></td>
+            <td class="booking-ticket"></td>
+            <td class="booking-passengers"></td>
+            <td class="booking-total"></td>
+            <td><a href="" class="booking-link">View</a></td>
+        </tr>
+    </template>
+
+    <script>
+        const status = document.getElementById('bookings-status');
+        const table = document.getElementById('bookings-table');
+        const body = document.getElementById('bookings-body');
+        const template = document.getElementById('booking-row-template');
+
+        function showBookings(bookings) {
+            body.innerHTML = '';
+
+            if (bookings.length === 0) {
+                status.textContent = 'No bookings yet.';
+                table.hidden = true;
+                return;
+            }
+
+            bookings.forEach((booking) => {
+                const row = template.content.cloneNode(true);
+                const names = (booking.passengers || [])
+                    .map((p) => `${p.firstName} ${p.lastName}`)
+                    .join(', ');
+
+                row.querySelector('.booking-id').textContent = booking.bookingId;
+                row.querySelector('.booking-trip').textContent = booking.tripId;
+                row.querySelector('.booking-day').textContent = booking.selectedDay;
+                row.querySelector('.booking-ticket').textContent = booking.ticketClass;
+                row.querySelector('.booking-passengers').textContent = names;
+                row.querySelector('.booking-total').textContent = `¥${Number(booking.totalAmount || 0).toLocaleString()}`;
+                row.querySelector('.booking-link').href = `/trips/confirmation/${booking.bookingId}`;
+
+                body.appendChild(row);
+            });
+
+            status.textContent = '';
+            table.hidden = false;
+        }
+
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/bookings');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                showBookings(await response.json());
+            } catch (error) {
+                console.error('Error fetching bookings:', error);
+                status.textContent = 'Could not load bookings.';
+            }
+        }
+
+        loadBookings();
+    </script>
+
+    <%- include('./partials/footer') %>

@@ -1,5 +1,6 @@
 import { getAllTrips, getTripById } from '../controllers/trips.js';
 import { getSchedulesForTrip } from '../controllers/schedules.js';
+import { getAllBookings } from '../controllers/bookings.js';
 import { Router } from 'express';
 
 const router = Router();
@@ -69,5 +70,19 @@ router.get('/trips/:id', getTripById);
  *         description: Internal server error
  */
 router.get('/trips/:id/schedules', getSchedulesForTrip);
+
+/**
+ * @swagger
+ * /api/bookings:
+ *   get:
+ *     summary: Retrieve a list of all bookings
+ *     description: Returns a JSON array of all bookings stored in the database.
+ *     responses:
+ *       200:
+ *         description: A JSON array of booking objects
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/bookings', getAllBookings);
 
 export default router;
