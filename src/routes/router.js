@@ -4,7 +4,9 @@ import { trainsApi, trainsPage } from './trains.js';
 import { Router } from 'express';
 import { homePage, aboutPage, testErrorPage } from './index.js';
 import { bookingsAdminPage } from '../controllers/bookings.js';
-import { registerPage , loginPage , registerUser , logoutUser , loginUser} from '../controllers/auth.js';
+import { registerPage, loginPage, registerUser, logoutUser, loginUser } from '../controllers/auth.js';
+import { requirePageRole } from '../middleware/auth.js';
+import { adminDashboardPage } from '../controllers/auth.js';
 
 const router = Router();
 
@@ -37,6 +39,9 @@ router.get('/api/trains', trainsApi);
 
 // Bookings admin page
 router.get('/bookings-admin', bookingsAdminPage);
+
+// Admin dashboard page
+router.get('/admin', requirePageRole('admin'), adminDashboardPage);
 
 // Trips API (/api/trips y /api/trips/:id)
 router.use('/api', apiRoutes);
