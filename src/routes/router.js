@@ -3,12 +3,28 @@ import apiRoutes from './api-routes.js';
 import { trainsApi, trainsPage } from './trains.js';
 import { Router } from 'express';
 import { homePage, aboutPage, testErrorPage } from './index.js';
-import  {bookingsAdminPage } from '../controllers/bookings.js';
+import { bookingsAdminPage } from '../controllers/bookings.js';
+import { registerPage , loginPage , registerUser , logoutUser , loginUser} from '../controllers/auth.js';
 
 const router = Router();
 
 // Home page
 router.get('/', homePage);
+
+// Register page
+router.get('/register', registerPage);
+
+// Login page
+router.get('/login', loginPage);
+
+// Login user
+router.post('/login', loginUser);
+
+// Register user
+router.post('/register', registerUser);
+
+// Logout user
+router.post('/logout', logoutUser);
 
 // About page
 router.get('/about', aboutPage);

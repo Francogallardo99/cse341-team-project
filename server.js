@@ -7,6 +7,11 @@ const PORT = process.env.PORT || 3000;
 // Connect to MongoDB before accepting requests.
 await connectToDb();
 
+if (process.env.SESSION_SECRET === undefined) {
+    console.error('SESSION_SECRET environment variable is not set. Exiting...');
+    process.exit(1);
+}
+
 // Start the live-reload WebSocket server in development mode.
 if (NODE_ENV.includes('dev')) {
     const ws = await import('ws');
